@@ -27,8 +27,7 @@ var Recorder = function(source, cfg){
     worker.postMessage({
       command: 'record',
       buffer: [
-        e.inputBuffer.getChannelData(0),
-        e.inputBuffer.getChannelData(1)
+        e.inputBuffer.getChannelData(0)
       ]
     });
   }

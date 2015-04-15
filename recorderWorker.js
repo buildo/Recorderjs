@@ -30,15 +30,12 @@ function init(config){
 
 function record(inputBuffer){
   recBuffersL.push(inputBuffer[0]);
-  recBuffersR.push(inputBuffer[1]);
   recLength += inputBuffer[0].length;
 }
 
 function exportWAV(type){
-  var bufferL = mergeBuffers(recBuffersL, recLength);
-  var bufferR = mergeBuffers(recBuffersR, recLength);
-  var interleaved = interleave(bufferL, bufferR);
-  var dataview = encodeWAV(interleaved);
+  var buffer = mergeBuffers(recBuffersL, recLength);
+  var dataview = encodeWAV(buffer);
   var audioBlob = new Blob([dataview], { type: type });
 
   self.postMessage(audioBlob);
@@ -95,14 +92,15 @@ function writeString(view, offset, string){
   }
 }
 
+
 function encodeWAV(samples){
   var buffer = new ArrayBuffer(44 + samples.length * 2);
   var view = new DataView(buffer);
 
   /* RIFF identifier */
   writeString(view, 0, 'RIFF');
-  /* RIFF chunk length */
-  view.setUint32(4, 36 + samples.length * 2, true);
+  /* file length */
+  view.setUint32(4, 32 + samples.length, true);
   /* RIFF type */
   writeString(view, 8, 'WAVE');
   /* format chunk identifier */
@@ -112,13 +110,16 @@ function encodeWAV(samples){
   /* sample format (raw) */
   view.setUint16(20, 1, true);
   /* channel count */
-  view.setUint16(22, 2, true);
+  //view.setUint16(22, 2, true); /*STEREO*/
+  view.setUint16(22, 1, true); /*MONO*/
   /* sample rate */
   view.setUint32(24, sampleRate, true);
   /* byte rate (sample rate * block align) */
-  view.setUint32(28, sampleRate * 4, true);
+  //view.setUint32(28, sampleRate * 4, true); /*STEREO*/
+  view.setUint32(28, sampleRate * 2, true); /*MONO*/
   /* block align (channel count * bytes per sample) */
-  view.setUint16(32, 4, true);
+  //view.setUint16(32, 4, true); /*STEREO*/
+  view.setUint16(32, 2, true); /*MONO*/
   /* bits per sample */
   view.setUint16(34, 16, true);
   /* data chunk identifier */
